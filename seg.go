@@ -5,23 +5,29 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 )
 
 var Dict map[string][]string //字典
-var Plan map[int][]string    //分词方案
-var PlanLevel []int          //分词方案权重值
+var Plan []string            //分词方案
 
 func main() {
+	//加载字典
 	LoadDict()
-
-	planArr := GetWordLr("按照长度的不同", make([]string, 0, 5))
-	fmt.Println(planArr)
-
-	planArr1 := GetWordRl("按照长度的不同", make([]string, 0, 5))
-	SliceReverse(&planArr1) //反转
-	fmt.Println(planArr1)
-
+	//正序分词
+	planLr := GetWordLr("设施和服务", make([]string, 0, 5))
+	//倒序分词
+	planRl := GetWordRl("设施和服务", make([]string, 0, 5))
+	//反转
+	SliceReverse(&planRl)
+	//比较
+	if SliceIsEqual(planLr, planRl) {
+		Plan = planLr
+	} else {
+		Plan = PlanFilter(planLr, planRl)
+	}
+	fmt.Println(Plan)
 }
 
 //加载字典
@@ -121,4 +127,38 @@ func SliceReverse(sli *[]string) {
 	for i := 1; i <= len/2; i++ {
 		(*sli)[i-1], (*sli)[len-i] = (*sli)[len-i], (*sli)[i-1]
 	}
+}
+
+//切片内容是否相同
+func SliceIsEqual(sliL, sliR []string) bool {
+	if len(sliL) != len(sliR) {
+		return false
+	}
+	for key, val := range sliL {
+		if val != sliR[key] {
+			return false
+		}
+	}
+	return true
+}
+
+//方案按照权重筛选
+func PlanFilter(sliL, sliR []string) []string {
+	var levl, levr int
+	for _, val := range sliL {
+		rate, err := strconv.Atoi(Dict[val][0])
+		if err == nil {
+			levl += rate
+		}
+	}
+	for _, val := range sliR {
+		rate, err := strconv.Atoi(Dict[val][0])
+		if err == nil {
+			levr += rate
+		}
+	}
+	if levl > levr {
+		return sliL
+	}
+	return sliR
 }
