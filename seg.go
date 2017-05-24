@@ -13,21 +13,27 @@ var Dict map[string][]string //字典
 var Plan []string            //分词方案
 
 func main() {
+	fmt.Println(SegString("苹果胡萝卜泥"))
+}
+
+func SegString(str string) []string {
 	//加载字典
 	LoadDict()
 	//正序分词
-	planLr := GetWordLr("设施和服务", make([]string, 0, 5))
+	planLr := GetWordLr(str, make([]string, 0, 5))
+	fmt.Println(planLr)
 	//倒序分词
-	planRl := GetWordRl("设施和服务", make([]string, 0, 5))
+	planRl := GetWordRl(str, make([]string, 0, 5))
 	//反转
 	SliceReverse(&planRl)
+	fmt.Println(planRl)
 	//比较
 	if SliceIsEqual(planLr, planRl) {
 		Plan = planLr
 	} else {
 		Plan = PlanFilter(planLr, planRl)
 	}
-	fmt.Println(Plan)
+	return Plan
 }
 
 //加载字典
@@ -144,6 +150,12 @@ func SliceIsEqual(sliL, sliR []string) bool {
 
 //方案按照权重筛选
 func PlanFilter(sliL, sliR []string) []string {
+	if len(sliL) < len(sliR) {
+		return sliL
+	}
+	if len(sliR) < len(sliL) {
+		return sliR
+	}
 	var levl, levr int
 	for _, val := range sliL {
 		rate, err := strconv.Atoi(Dict[val][0])
