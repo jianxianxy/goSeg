@@ -10,30 +10,31 @@ import (
 )
 
 var Dict map[string][]string //字典
-var Plan []string            //分词方案
 
 func main() {
-	fmt.Println(SegString("苹果胡萝卜泥"))
+	plan := SegString("苹果胡萝卜泥")
+
+	matl := MatchLevel(plan, "苹果胡萝卜泥苹果")
+	fmt.Println(matl)
 }
 
 func SegString(str string) []string {
+	var plan []string
 	//加载字典
 	LoadDict()
 	//正序分词
 	planLr := GetWordLr(str, make([]string, 0, 5))
-	fmt.Println(planLr)
 	//倒序分词
 	planRl := GetWordRl(str, make([]string, 0, 5))
 	//反转
 	SliceReverse(&planRl)
-	fmt.Println(planRl)
 	//比较
 	if SliceIsEqual(planLr, planRl) {
-		Plan = planLr
+		plan = planLr
 	} else {
-		Plan = PlanFilter(planLr, planRl)
+		plan = PlanFilter(planLr, planRl)
 	}
-	return Plan
+	return plan
 }
 
 //加载字典
@@ -173,4 +174,14 @@ func PlanFilter(sliL, sliR []string) []string {
 		return sliL
 	}
 	return sliR
+}
+
+//匹配度分析
+func MatchLevel(plan []string, con string) map[string]int {
+	matl := make(map[string]int, 0)
+	for _, val := range plan {
+		num := strings.Count(con, val)
+		matl[val] = num
+	}
+	return matl
 }
