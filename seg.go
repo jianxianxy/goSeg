@@ -12,10 +12,8 @@ import (
 var Dict map[string][]string //字典
 
 func main() {
-	plan := SegString("苹果胡萝卜泥")
-
-	matl := MatchLevel(plan, "苹果胡萝卜泥苹果")
-	fmt.Println(matl)
+	plan := SegString("习近平视察海军机关")
+	fmt.Println("最终结果：", plan)
 }
 
 func SegString(str string) []string {
@@ -24,12 +22,13 @@ func SegString(str string) []string {
 	LoadDict()
 	//正序分词
 	planLr := GetWordLr(str, make([]string, 0, 5))
+	fmt.Println("正序分词：", planLr)
 	//倒序分词
 	planRl := GetWordRl(str, make([]string, 0, 5))
-	//反转
-	SliceReverse(&planRl)
+	fmt.Println("倒序分词", planRl)
 	//比较
 	if SliceIsEqual(planLr, planRl) {
+		fmt.Println("正序倒序相同")
 		plan = planLr
 	} else {
 		plan = PlanFilter(planLr, planRl)
@@ -61,33 +60,28 @@ func LoadDict() {
 
 //正序分词
 func GetWordLr(str string, pla []string) []string {
-	sta := 0
 	add := 2
 	strArr := []rune(str)
 	strlen := len(strArr)
+	maxindex := 1
 	var currword string
 	if strlen < 2 {
 		pla = append(pla, str)
 		return pla
 	}
 	for {
-		if sta+add <= strlen {
-			word := strArr[sta:add]
+		if add <= strlen {
+			word := strArr[:add]
 			if _, ok := Dict[string(word)]; ok {
+				maxindex = add
 				currword = string(word)
-				add += 1
-			} else {
-				add -= 1
-				if add == 1 {
-					word := strArr[sta:add]
-					currword = string(word)
-				}
-				pla = append(pla, currword)
-				pla = GetWordLr(string(strArr[sta+add:]), pla)
-				break
 			}
+			add += 1
 		} else {
+			word := strArr[:maxindex]
+			currword = string(word)
 			pla = append(pla, currword)
+			pla = GetWordLr(string(strArr[maxindex:]), pla)
 			break
 		}
 	}
@@ -99,6 +93,7 @@ func GetWordRl(str string, pla []string) []string {
 	add := 2
 	strArr := []rune(str)
 	strlen := len(strArr)
+	maxindex := 1
 	var currword string
 	if strlen < 2 {
 		pla = append(pla, str)
@@ -108,20 +103,15 @@ func GetWordRl(str string, pla []string) []string {
 		if strlen-add >= 0 {
 			word := strArr[strlen-add : strlen]
 			if _, ok := Dict[string(word)]; ok {
+				maxindex = add
 				currword = string(word)
-				add += 1
-			} else {
-				add -= 1
-				if add == 1 {
-					word := strArr[strlen-add : strlen]
-					currword = string(word)
-				}
-				pla = append(pla, currword)
-				pla = GetWordRl(string(strArr[:strlen-add]), pla)
-				break
 			}
+			add += 1
 		} else {
+			word := strArr[strlen-maxindex : strlen]
+			currword = string(word)
 			pla = append(pla, currword)
+			pla = GetWordRl(string(strArr[:strlen-maxindex]), pla)
 			break
 		}
 	}
@@ -141,8 +131,12 @@ func SliceIsEqual(sliL, sliR []string) bool {
 	if len(sliL) != len(sliR) {
 		return false
 	}
-	for key, val := range sliL {
-		if val != sliR[key] {
+	mapR := make(map[string]int, 0)
+	for k, v := range sliR {
+		mapR[v] = k
+	}
+	for _, val := range sliL {
+		if _, ok := mapR[val]; !ok {
 			return false
 		}
 	}
