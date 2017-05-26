@@ -7,25 +7,29 @@ import (
 	"os"
 	"strconv"
 	"strings"
+    "regexp"
 )
 
 var Dict map[string][]string //字典
 
 func main() {
-	plan := SegString("习近平视察海军机关")
+    LoadDict()
+	plan := SegString("当前商,品储存，状态")
 	fmt.Println("最终结果：", plan)
 }
 
 func SegString(str string) []string {
-	var plan []string
-	//加载字典(并行时请把此方法放于循环之外，保证此包只加载一次字典)
-	LoadDict()
-	//正序分词
-	planLr := GetWordLr(str, make([]string, 0, 5))
-	fmt.Println("正序分词：", planLr)
-	//倒序分词
-	planRl := GetWordRl(str, make([]string, 0, 5))
-	fmt.Println("倒序分词", planRl)
+    var plan []string
+    var ret []string
+    var planLr []string
+    var planRl []string
+    splword := SplitByPunc(str)    
+    for _,val := range splword{        
+        wl := GetWordLr(val, make([]string,0))
+        planLr = append(planLr,wl...)
+        wr := GetWordRl(val, make([]string,0))
+        planRl = append(planRl,wr...)
+    }
 	//比较
 	if SliceIsEqual(planLr, planRl) {
 		fmt.Println("正序倒序相同")
@@ -33,7 +37,13 @@ func SegString(str string) []string {
 	} else {
 		plan = PlanFilter(planLr, planRl)
 	}
-	return plan
+    
+    for _,val := range plan{
+        if len(val) > 0{
+            ret = append(ret,val)
+        }
+    }
+	return ret
 }
 
 //加载字典
@@ -116,6 +126,14 @@ func GetWordRl(str string, pla []string) []string {
 		}
 	}
 	return pla
+}
+
+
+//字符串根据标点分割成切片
+func SplitByPunc(str string) []string{
+    reg := regexp.MustCompile(`[\pP]+`)
+	spl := reg.Split(str,-1)
+    return spl
 }
 
 //数组切片反转顺序
