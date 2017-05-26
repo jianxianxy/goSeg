@@ -18,7 +18,7 @@ func main() {
 
 func SegString(str string) []string {
 	var plan []string
-	//加载字典
+	//加载字典(并行时请把此方法放于循环之外，保证此包只加载一次字典)
 	LoadDict()
 	//正序分词
 	planLr := GetWordLr(str, make([]string, 0, 5))
