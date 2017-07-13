@@ -14,7 +14,9 @@ var Dict map[string][]string //字典
 
 func main() {
     LoadDict()
-	plan := SegString("当前商,品储存，状态")
+    str,spr := GetQuotesSplit("中国神华与国电电力双双停牌 引燃“中国神电”预期！")
+	plan := SegString(str)
+    plan = append(plan,spr...)
 	fmt.Println("最终结果：", plan)
 }
 
@@ -128,12 +130,25 @@ func GetWordRl(str string, pla []string) []string {
 	return pla
 }
 
-
 //字符串根据标点分割成切片
-func SplitByPunc(str string) []string{
-    reg := regexp.MustCompile(`[\pP]+`)
+func SplitByPunc(str string) []string{    
+    reg := regexp.MustCompile(`[\pP\s]+`)
 	spl := reg.Split(str,-1)
     return spl
+}
+
+//处理引号内容
+func GetQuotesSplit(str string)(string,[]string){
+    reg := regexp.MustCompile(`“([^”]+)”`)
+    match := reg.FindAllStringSubmatch(str,-1)
+    retsp := make([]string,0)
+    if len(match) > 0{
+        for _,val := range match{
+            retsp = append(retsp,val[1])
+            str = strings.Replace(str,val[0],",",-1)
+        }
+    }
+    return str,retsp
 }
 
 //数组切片反转顺序
